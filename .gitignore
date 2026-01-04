@@ -1,0 +1,51 @@
+# Backend
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/*.jar
+backend/.idea/
+backend/*.iml
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.idea/
+frontend/*.iml
+
+# Checkout Page
+checkout-page/node_modules/
+checkout-page/build/
+checkout-page/dist/
+checkout-page/.env.local
+checkout-page/.env.development.local
+checkout-page/.env.test.local
+checkout-page/.env.production.local
+checkout-page/npm-debug.log*
+checkout-page/yarn-debug.log*
+checkout-page/yarn-error.log*
+checkout-page/.idea/
+checkout-page/*.iml
+
+# Docker
+.env
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
