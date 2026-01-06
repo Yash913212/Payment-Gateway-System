@@ -24,7 +24,8 @@ module.exports = (pool) => {
                 id: merchant.id,
                 email: merchant.email,
                 api_key: merchant.api_key,
-                api_secret: merchant.api_secret
+                api_secret: merchant.api_secret,
+                seeded: true
             });
         } catch (error) {
             console.error('Error fetching test merchant:', error);

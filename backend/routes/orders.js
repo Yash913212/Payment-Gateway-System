@@ -128,5 +128,49 @@ module.exports = (pool) => {
         }
     });
 
+    // Get payments for order (authenticated)
+    router.get('/:id/payments', async(req, res) => {
+        try {
+            const { id } = req.params;
+            const merchantId = req.merchant.id;
+
+            // Verify order belongs to merchant
+            const order = await orderService.getOrderById(id);
+
+            if (!order) {
+                return res.status(404).json({
+                    error: {
+                        code: 'NOT_FOUND_ERROR',
+                        description: 'Order not found'
+                    }
+                });
+            }
+
+            if (order.merchant_id !== merchantId) {
+                return res.status(403).json({
+                    error: {
+                        code: 'UNAUTHORIZED_ERROR',
+                        description: 'Unauthorized to access this order'
+                    }
+                });
+            }
+
+            // Get payments for this order
+            const payments = await pool.query(
+                'SELECT id, order_id, amount, currency, method, status, vpa, card_network, card_last4, created_at, updated_at FROM payments WHERE order_id = $1 ORDER BY created_at DESC', [id]
+            );
+
+            res.json(payments.rows);
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            res.status(500).json({
+                error: {
+                    code: 'INTERNAL_ERROR',
+                    description: error.message
+                }
+            });
+        }
+    });
+
     return router;
 };

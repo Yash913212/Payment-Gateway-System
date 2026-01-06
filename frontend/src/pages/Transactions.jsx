@@ -8,9 +8,34 @@ export default function Transactions({ merchant }) {
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                // In a real app, this would fetch from the API
-                // For now, we show an empty state
-                setTransactions([]);
+                // Fetch all orders for this merchant
+                const ordersResponse = await axios.get('http://localhost:8000/api/v1/orders', {
+                    headers: {
+                        'X-Api-Key': merchant.apiKey,
+                        'X-Api-Secret': merchant.apiSecret
+                    }
+                });
+
+                const orders = ordersResponse.data || [];
+                const transactionsList = [];
+
+                // For each order, fetch its payments
+                for (const order of orders) {
+                    try {
+                        const paymentsResponse = await axios.get(`http://localhost:8000/api/v1/orders/${order.id}/payments`, {
+                            headers: {
+                                'X-Api-Key': merchant.apiKey,
+                                'X-Api-Secret': merchant.apiSecret
+                            }
+                        });
+                        const payments = paymentsResponse.data || [];
+                        transactionsList.push(...payments);
+                    } catch (error) {
+                        // Order may not have payments yet
+                    }
+                }
+
+                setTransactions(transactionsList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
             } catch (error) {
                 console.error('Error fetching transactions:', error);
             } finally {
@@ -53,7 +78,7 @@ export default function Transactions({ merchant }) {
                                 transactions.map((tx) => (
                                     <tr key={tx.id} data-test-id="transaction-row" data-payment-id={tx.id}>
                                         <td data-test-id="payment-id">{tx.id}</td>
-                                        <td data-test-id="order-id">{tx.orderId}</td>
+                                        <td data-test-id="order-id">{tx.order_id}</td>
                                         <td data-test-id="amount">{(tx.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                         <td data-test-id="method">{tx.method}</td>
                                         <td>
@@ -61,7 +86,7 @@ export default function Transactions({ merchant }) {
                                                 {tx.status}
                                             </span>
                                         </td>
-                                        <td data-test-id="created-at">{new Date(tx.createdAt).toLocaleString()}</td>
+                                        <td data-test-id="created-at">{new Date(tx.created_at).toLocaleString()}</td>
                                     </tr>
                                 ))
                             )}

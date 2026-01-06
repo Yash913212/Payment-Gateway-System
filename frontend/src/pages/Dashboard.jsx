@@ -20,22 +20,37 @@ export default function Dashboard({ merchant }) {
                 });
 
                 const orders = ordersResponse.data || [];
-                
-                // Calculate stats from orders
                 let totalAmount = 0;
-                let completedCount = 0;
-                
-                orders.forEach(order => {
-                    totalAmount += order.amount || 0;
-                    if (order.status === 'completed') {
-                        completedCount += 1;
-                    }
-                });
+                let successCount = 0;
+                let totalPayments = 0;
 
-                const successRate = orders.length > 0 ? Math.round((completedCount / orders.length) * 100) : 0;
+                // For each order, fetch its payments to calculate stats
+                for (const order of orders) {
+                    try {
+                        const paymentsResponse = await axios.get(`http://localhost:8000/api/v1/orders/${order.id}/payments`, {
+                            headers: {
+                                'X-Api-Key': merchant.apiKey,
+                                'X-Api-Secret': merchant.apiSecret
+                            }
+                        });
+                        const payments = paymentsResponse.data || [];
+                        
+                        payments.forEach(payment => {
+                            totalPayments += 1;
+                            if (payment.status === 'success') {
+                                totalAmount += payment.amount || 0;
+                                successCount += 1;
+                            }
+                        });
+                    } catch (error) {
+                        // Order may not have payments yet
+                    }
+                }
+
+                const successRate = totalPayments > 0 ? Math.round((successCount / totalPayments) * 100) : 0;
 
                 setStats({
-                    totalTransactions: orders.length,
+                    totalTransactions: totalPayments,
                     totalAmount: totalAmount,
                     successRate: successRate
                 });

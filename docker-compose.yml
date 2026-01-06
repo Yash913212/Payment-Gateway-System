@@ -24,7 +24,7 @@ services:
       context: ./backend
     container_name: gateway_api
     ports:
-      - "8080:8000"
+      - "8000:8000"
     environment:
       PORT: 8000
       DB_USER: gateway_user

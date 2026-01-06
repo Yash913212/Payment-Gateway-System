@@ -41,7 +41,7 @@ app.use(cors({
 }));
 
 // API Authentication Middleware
-const authenticateApiKey = (req, res, next) => {
+const authenticateApiKey = async(req, res, next) => {
     const path = req.path;
 
     // Skip auth for public and test endpoints
@@ -61,23 +61,33 @@ const authenticateApiKey = (req, res, next) => {
         });
     }
 
-    // For now, validate against test merchant
-    if (apiKey !== 'key_test_abc123' || apiSecret !== 'secret_test_xyz789') {
-        return res.status(401).json({
+    // Query database to validate API credentials
+    try {
+        const result = await pool.query(
+            'SELECT id, email FROM merchants WHERE api_key = $1 AND api_secret = $2', [apiKey, apiSecret]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                error: {
+                    code: 'AUTHENTICATION_ERROR',
+                    description: 'Invalid API Key or API Secret'
+                }
+            });
+        }
+
+        // Store merchant info in request
+        req.merchant = result.rows[0];
+        next();
+    } catch (error) {
+        console.error('Auth error:', error);
+        return res.status(500).json({
             error: {
-                code: 'AUTHENTICATION_ERROR',
-                description: 'Invalid API Key or API Secret'
+                code: 'INTERNAL_ERROR',
+                description: 'Authentication check failed'
             }
         });
     }
-
-    // Store merchant info in request
-    req.merchant = {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        email: 'test@example.com'
-    };
-
-    next();
 };
 
 // Apply auth middleware to /api/v1 routes

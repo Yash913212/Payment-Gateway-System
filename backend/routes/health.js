@@ -6,13 +6,13 @@ module.exports = (pool) => {
     router.get('/', async(req, res) => {
         try {
             const dbResult = await pool.query('SELECT NOW()');
-            const dbStatus = dbResult.rows.length > 0 ? 'up' : 'down';
+            const dbStatus = dbResult.rows.length > 0 ? 'connected' : 'disconnected';
 
             res.json({
-                status: 'up',
+                status: 'healthy',
                 database: dbStatus,
-                redis: 'up',
-                worker: 'up',
+                redis: 'connected',
+                worker: 'running',
                 timestamp: new Date().toISOString()
             });
         } catch (error) {
